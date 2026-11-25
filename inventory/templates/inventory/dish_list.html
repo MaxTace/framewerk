@@ -1,0 +1,27 @@
+{% extends "inventory/base.html" %}
+{% block title %}Блюда{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">МЕНЮ И РЕЦЕПТУРЫ</p><h1>Блюда</h1><p class="muted">Состав блюд и ингредиенты на одну порцию.</p></div><a class="button" href="{% url 'inventory:dish_add' %}">＋ Новое блюдо</a></div>
+<form class="filter-bar" method="get">
+  <label class="search-field"><span>⌕</span><input type="search" name="q" value="{{ search }}" placeholder="Блюдо или ингредиент"></label>
+  <select name="ingredient" aria-label="Ингредиент"><option value="">Любой ингредиент</option>{% for ingredient in ingredients %}<option value="{{ ingredient.pk }}" {% if selected_ingredient == ingredient.pk|stringformat:"s" %}selected{% endif %}>{{ ingredient.name }}</option>{% endfor %}</select>
+  <button class="button button-secondary" type="submit">Найти</button>
+  {% if search or selected_ingredient %}<a class="text-link" href="{% url 'inventory:dish_list' %}">Сбросить</a>{% endif %}
+</form>
+{% if invalid_filter %}<p class="inline-alert">Некорректный ингредиент в фильтре; показаны все блюда.</p>{% endif %}
+<section class="dish-grid">
+{% for dish in page_obj %}
+  <article class="dish-card">
+    {% if dish.image %}<img class="dish-card-image" src="{{ dish.image.url }}" alt="Фото блюда «{{ dish.name }}»">{% endif %}
+    <div class="dish-card-top"><span class="dish-icon">✳</span><span class="badge {% if dish.is_available %}badge-success{% else %}badge-neutral{% endif %}">{% if dish.is_available %}В меню{% else %}Скрыто{% endif %}</span></div>
+    <h2><a href="{% url 'inventory:dish_detail' dish.pk %}">{{ dish.name }}</a></h2>
+    <p class="muted">{{ dish.description|default:"Описание не добавлено."|truncatechars:105 }}</p>
+    <div class="recipe-preview">{% for item in dish.recipe_items.all|slice:":3" %}<span>{{ item.ingredient.name }}</span>{% empty %}<span>Рецептура не заполнена</span>{% endfor %}</div>
+    <div class="dish-card-bottom"><strong>{{ dish.price|floatformat:2 }} ₽</strong><a class="text-link" href="{% url 'inventory:dish_detail' dish.pk %}">Рецептура →</a></div>
+  </article>
+{% empty %}
+  <div class="panel empty-state"><p>Блюда не найдены</p><small>Добавьте блюдо или измените поиск.</small></div>
+{% endfor %}
+</section>
+{% include "inventory/includes/pagination.html" %}
+{% endblock %}

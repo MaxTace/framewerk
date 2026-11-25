@@ -1,0 +1,20 @@
+{% extends "inventory/base.html" %}
+{% block title %}{{ ingredient.name }}{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{% url 'inventory:ingredient_list' %}">Ингредиенты</a><span>/</span><span>{{ ingredient.name }}</span></div>
+<div class="page-heading"><div><p class="eyebrow">{{ ingredient.category|default:"ИНГРЕДИЕНТ" }}</p><h1>{{ ingredient.name }}</h1><p class="muted">{{ ingredient.notes|default:"Карточка ингредиента и история поступлений." }}</p></div><div class="button-row"><a class="button button-secondary" href="{% url 'inventory:ingredient_edit' ingredient.pk %}">Изменить</a><a class="button" href="{% url 'inventory:supply_add' %}">＋ Поставка</a></div></div>
+<section class="stats-grid stats-grid-detail">
+  <article class="stat-card"><span>Текущий остаток</span><strong>{{ stock.quantity|default:"0" }} {{ ingredient.get_unit_display }}</strong></article>
+  <article class="stat-card"><span>Минимальный остаток</span><strong>{{ ingredient.min_stock }} {{ ingredient.get_unit_display }}</strong></article>
+  <article class="stat-card"><span>Единица измерения</span><strong>{{ ingredient.get_unit_display }}</strong></article>
+</section>
+<section class="content-grid">
+  <article class="panel"><div class="section-heading"><div><p class="eyebrow">ИСПОЛЬЗОВАНИЕ</p><h2>В рецептах</h2></div></div>
+    {% if recipe_items %}<ul class="simple-list">{% for item in recipe_items %}<li><a class="table-link" href="{% url 'inventory:dish_detail' item.dish.pk %}">{{ item.dish.name }}</a><span>{{ item.quantity }} {{ ingredient.get_unit_display }} на порцию</span></li>{% endfor %}</ul>{% else %}<div class="empty-state"><p>Ингредиент пока не входит в рецепты.</p></div>{% endif %}
+  </article>
+  <article class="panel"><div class="section-heading"><div><p class="eyebrow">ИСТОРИЯ</p><h2>Последние поставки</h2></div></div>
+    {% if supplies %}<ul class="simple-list">{% for supply in supplies %}<li><span>{{ supply.received_at|date:"d.m.Y" }} · {{ supply.supplier|default:"Поставщик не указан" }}</span><strong>+{{ supply.quantity }} {{ ingredient.get_unit_display }}</strong></li>{% endfor %}</ul>{% else %}<div class="empty-state"><p>Поставок пока нет.</p></div>{% endif %}
+  </article>
+</section>
+<form class="danger-zone" method="post" action="{% url 'inventory:ingredient_delete' ingredient.pk %}">{% csrf_token %}<span>Удалить ингредиент</span><small>Удаление возможно, только если он не использован в поставках или рецептах.</small><button class="button button-danger" type="submit">Удалить</button></form>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "inventory/base.html" %}
+{% block title %}Обзор{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">ПАНЕЛЬ УПРАВЛЕНИЯ</p>
+    <h1>Порядок на кухне<br><span>начинается со склада.</span></h1>
+    <p class="hero-copy">Контролируйте ингредиенты, рецептуры и новые поставки в одном месте.</p>
+  </div>
+  <a class="button button-light" href="{% url 'inventory:supply_add' %}">＋ Зарегистрировать поставку</a>
+</section>
+
+<section class="stats-grid" aria-label="Показатели">
+  <article class="stat-card"><span>Активные ингредиенты</span><strong>{{ ingredient_count }}</strong><a href="{% url 'inventory:ingredient_list' %}">Открыть список →</a></article>
+  <article class="stat-card"><span>Блюда в меню</span><strong>{{ dish_count }}</strong><a href="{% url 'inventory:dish_list' %}">Открыть меню →</a></article>
+  <article class="stat-card {% if low_stock_count %}stat-warning{% endif %}"><span>Низкий остаток</span><strong>{{ low_stock_count }}</strong><a href="{% url 'inventory:stock_list' %}?status=low">Проверить склад →</a></article>
+  <article class="stat-card"><span>Поставки · сумма</span><strong>{{ supply_cost|floatformat:2 }} ₽</strong><a href="{% url 'inventory:supply_list' %}">{{ supply_count }} записей →</a></article>
+</section>
+
+<section class="content-grid">
+  <article class="panel">
+    <div class="section-heading"><div><p class="eyebrow">ТРЕБУЕТ ВНИМАНИЯ</p><h2>Пора пополнить</h2></div><a class="text-link" href="{% url 'inventory:stock_list' %}?status=low">Все остатки →</a></div>
+    {% if low_stocks %}
+      <div class="table-wrap"><table><thead><tr><th>Ингредиент</th><th>Остаток</th><th>Минимум</th><th></th></tr></thead><tbody>
+      {% for stock in low_stocks %}
+        <tr><td><a class="table-link" href="{% url 'inventory:ingredient_detail' stock.ingredient.pk %}">{{ stock.ingredient.name }}</a></td><td><strong>{{ stock.quantity }} {{ stock.ingredient.get_unit_display }}</strong></td><td>{{ stock.ingredient.min_stock }} {{ stock.ingredient.get_unit_display }}</td><td><a class="text-link" href="{% url 'inventory:supply_add' %}">＋</a></td></tr>
+      {% endfor %}
+      </tbody></table></div>
+    {% else %}
+      <div class="empty-state"><span class="empty-icon">✓</span><p>Все остатки в норме</p><small>Пороговые значения не достигнуты.</small></div>
+    {% endif %}
+  </article>
+  <aside class="panel">
+    <div class="section-heading"><div><p class="eyebrow">ПОСТУПЛЕНИЯ</p><h2>Недавние поставки</h2></div><a class="text-link" href="{% url 'inventory:supply_list' %}">Все →</a></div>
+    {% if recent_supplies %}
+      <ul class="activity-list">
+        {% for supply in recent_supplies %}
+          <li><span class="activity-dot"></span><div><strong>{{ supply.ingredient.name }}</strong><small>{{ supply.supplier|default:"Поставщик не указан" }} · {{ supply.received_at|date:"d.m.Y" }}</small></div><b>+{{ supply.quantity }} {{ supply.ingredient.get_unit_display }}</b></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state"><p>Поставок пока нет</p><a class="text-link" href="{% url 'inventory:supply_add' %}">Добавить первую →</a></div>
+    {% endif %}
+    {% if category_summary %}
+      <div class="category-summary"><p class="eyebrow">КАТЕГОРИИ ИНГРЕДИЕНТОВ</p>
+        {% for category in category_summary %}
+          <div><span>{{ category.category|default:"Без категории" }}</span><strong>{{ category.ingredient_count }}</strong></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </aside>
+</section>
+{% endblock %}

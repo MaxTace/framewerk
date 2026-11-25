@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Учет ингредиентов{% endblock %} · Mise</title>
+  <link rel="stylesheet" href="{% static 'inventory/styles.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'inventory:dashboard' %}"><span class="brand-mark">M</span> Mise</a>
+    <nav class="main-nav" aria-label="Основная навигация">
+      <a href="{% url 'inventory:ingredient_list' %}">Ингредиенты</a>
+      <a href="{% url 'inventory:dish_list' %}">Блюда</a>
+      <a href="{% url 'inventory:stock_list' %}">Остатки</a>
+      <a href="{% url 'inventory:supply_list' %}">Поставки</a>
+    </nav>
+    <a class="admin-link" href="{% url 'admin:index' %}">Администрирование ↗</a>
+  </header>
+  <main class="page-shell">
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">Mise · Система учета ингредиентов ресторана</footer>
+</body>
+</html>

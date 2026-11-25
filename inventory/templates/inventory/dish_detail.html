@@ -1,0 +1,15 @@
+{% extends "inventory/base.html" %}
+{% block title %}{{ dish.name }}{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{% url 'inventory:dish_list' %}">Блюда</a><span>/</span><span>{{ dish.name }}</span></div>
+<div class="page-heading"><div><p class="eyebrow">РЕЦЕПТУРА</p><h1>{{ dish.name }}</h1><p class="muted">{{ dish.description|default:"Описание не добавлено." }}</p></div><div class="button-row"><a class="button button-secondary" href="{% url 'inventory:dish_edit' dish.pk %}">Изменить блюдо</a><a class="button" href="{% url 'inventory:recipe_item_add' dish.pk %}">＋ Ингредиент</a></div></div>
+{% if dish.image %}<img class="dish-detail-image" src="{{ dish.image.url }}" alt="Фото блюда «{{ dish.name }}»">{% endif %}
+<section class="content-grid">
+  <article class="panel"><div class="section-heading"><div><p class="eyebrow">НА ОДНУ ПОРЦИЮ</p><h2>Состав</h2></div><strong class="price">{{ dish.price|floatformat:2 }} ₽</strong></div>
+    {% if dish.recipe_items.all %}<div class="table-wrap"><table><thead><tr><th>Ингредиент</th><th>Количество</th><th>Остаток</th><th></th></tr></thead><tbody>
+    {% for item in dish.recipe_items.all %}<tr><td><a class="table-link" href="{% url 'inventory:ingredient_detail' item.ingredient.pk %}">{{ item.ingredient.name }}</a></td><td>{{ item.quantity }} {{ item.ingredient.get_unit_display }}</td><td>{{ item.ingredient.stock.quantity }} {{ item.ingredient.get_unit_display }}</td><td><form method="post" action="{% url 'inventory:recipe_item_delete' item.pk %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="Удалить ингредиент">×</button></form></td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<div class="empty-state"><p>Рецептура пока пуста</p><small>Добавьте ингредиенты и их количество на одну порцию.</small></div>{% endif %}
+  </article>
+  <aside class="panel info-panel"><p class="eyebrow">КАРТОЧКА БЛЮДА</p><dl><div><dt>Статус</dt><dd>{% if dish.is_available %}В меню{% else %}Не отображается{% endif %}</dd></div><div><dt>Ингредиентов</dt><dd>{{ dish.recipe_items.count }}</dd></div></dl><form method="post" action="{% url 'inventory:dish_delete' dish.pk %}">{% csrf_token %}<button class="button button-danger button-block" type="submit">Удалить блюдо</button></form></aside>
+</section>
+{% endblock %}
